@@ -1,0 +1,293 @@
+<html>
+<link rel="stylesheet" href="style.css" />
+<h1>Hour Angle Calculator</h1>
+<p>
+  Set right ascention of an object, date, time and your current timezone. Get
+  Greenwich mean sideral time (GMST), Local sideral time (LST) and hour angle of
+  your object (t).
+</p>
+<br />
+
+<label for="datepicker">Object right ascension (RA, α) </label>
+<input type="text" id="objectpicker" placeholder="12h 30m 10s" />
+<p></p>
+
+<label for="datepicker">Local Date:</label>
+<input type="text" id="datepicker" placeholder="Select Date" />
+<p></p>
+<label for="timepicker">Local Time:</label>
+<input type="text" id="timepicker" placeholder="Select Time" />
+<p></p>
+
+<label for="zonepicker">Local Time Offset:</label>
+<input type="text" id="zonepicker" placeholder="Select Time Zone" />
+<p></p>
+
+<p></p>
+<button type="submit" onclick="button_clicked()">Submit</button>
+<p></p>
+<table>
+  <thead>
+    <tr>
+      <th>UTC</th>
+      <th>GMST</th>
+      <th>GMST 0h</th>
+      <th>LST (𝞗)</th>
+      <th>HA (t)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td id="utc_val"></td>
+      <td id="gmst_val"></td>
+      <td id="gmst_t0_val"></td>
+      <td id="lst_val"></td>
+      <td id="ha_val"></td>
+    </tr>
+  </tbody>
+</table>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+
+<script>
+var today = new Date();
+
+document.addEventListener('DOMContentLoaded', function () {
+  flatpickr('#datepicker', {
+    // Options can be added here
+    defaultDate: today,
+    dateFormat: 'Y-m-d', // Example format
+  });
+
+  flatpickr('#timepicker', {
+    enableTime: true, // Enable time selection
+    noCalendar: true, // Disable the calendar
+    dateFormat: 'H:i', // Format for the time
+    defaultDate: today, // Pre-selected time
+    time_24hr: true,
+  });
+});
+
+//document.getElementById('latitude').value = -15/60*today.getTimezoneOffset() + '°00\'00\'\'';
+document.getElementById('zonepicker').value =
+  'UTC' + timezoneSign(today) + (-1 / 60) * today.getTimezoneOffset() + ':00';
+
+function timezoneSign(today) {
+  if (-today.getTimezoneOffset() > 0) {
+    return '+';
+  } else {
+    return '-';
+  }
+}
+
+// inputs: UTC date and time, output timezone
+// output: GMST in seconds
+
+// in UTC
+today_day = today.getUTCDate();
+today_month = today.getUTCMonth();
+today_year = today.getUTCFullYear();
+today_hour = today.getUTCHours();
+today_minute = today.getUTCMinutes();
+today_second = today.getUTCSeconds();
+today_miliseconds = today.getUTCMilliseconds();
+
+utc_offset = today.getTimezoneOffset();
+
+//today_midnight = Date.UTC(today_year, today_month, today_day);
+//today = Date.UTC(today_year, today_month, today_day, today_hour, today_minute, today_second, today_miliseconds);
+
+//today_time = today - today_midnight;
+
+function get_GMST_sec(today_time, today_midnight) {
+  H = today_time / 1000 / 60 / 60; // hour part of datetime today
+  JD = 2440587.5 + today_midnight / (1000.0 * 60 * 60 * 24); // Julian date of midnight today
+  D = JD - 2451545.0; // difference since year 2000
+  T = D / 36525.0;
+  return (
+    ((6.697375 + 0.065709824279 * D + 1.0027379 * H + 0.0000258 * T ** 2) %
+      24) *
+    3600
+  ); // in seconds
+}
+
+//GMST = get_GMST_sec(today_time, today_midnight);
+
+function split_sec(sec) {
+  return [
+    Math.floor(sec / 3600),
+    Math.floor((GMST / 60) % 60),
+    Math.round((GMST % 60) * 10) / 10,
+  ];
+}
+
+/*
+GMST_HOUR = Math.floor(GMST/3600);
+GMST_MINUTE = Math.floor((GMST/60)%60);
+GMST_SECOND = Math.round(((GMST)%60)*10)/10;
+
+LST = GMST -utc_offset*60;
+LST_HOUR = Math.floor(LST/3600);
+LST_MINUTE = Math.floor((LST/60)%60);
+LST_SECOND = Math.round((LST%60)*10)/10;
+
+console.log(new Date(today).toString());
+console.log(GMST_HOUR, GMST_MINUTE, GMST_SECOND);
+console.log(LST_HOUR, LST_MINUTE, LST_SECOND);
+*/
+//timezone = -today.getTimezoneOffset()/60;
+//utc_date = today.getUTCDate();
+
+const x = document.getElementById('demo');
+
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, error);
+  } else {
+    x.innerHTML = 'Geolocation is not supported by this browser.';
+  }
+}
+
+function success(position) {
+  x.innerHTML =
+    'Latitude: ' +
+    position.coords.latitude +
+    '<br>Longitude: ' +
+    position.coords.longitude;
+}
+
+function error(error) {
+  switch (error.code) {
+    case error.PERMISSION_DENIED:
+      x.innerHTML = 'User denied the request for Geolocation.';
+      break;
+    case error.POSITION_UNAVAILABLE:
+      x.innerHTML = 'Location information is unavailable.';
+      break;
+    case error.TIMEOUT:
+      x.innerHTML = 'The request to get user location timed out.';
+      break;
+    case error.UNKNOWN_ERROR:
+      x.innerHTML = 'An unknown error occurred.';
+      break;
+  }
+}
+
+console.log(new Date('2025-11-11T20:00:00+8:30').toString());
+console.log(moment.tz.guess());
+
+function get_utc_offset_input() {
+  offsetString = document.getElementById('zonepicker').value;
+
+  regex = /UTC([+-])(\d{1,2}):(\d{2})/;
+  match = offsetString.match(regex);
+
+  if (match) {
+    sign = match[1]; // '+' or '-'
+    hours = match[2]; // Hours part
+    minutes = match[3]; // Minutes part
+
+    return (
+      sign +
+      String(hours).padStart(2, '0') +
+      ':' +
+      String(minutes).padStart(2, '0')
+    );
+  } else {
+    alert('Invalid UTC offset');
+  }
+}
+
+function get_time_input() {
+  return document.getElementById('timepicker').value + ':00';
+}
+
+function get_date_input() {
+  return document.getElementById('datepicker').value;
+}
+
+function get_iso8601_date() {
+  return moment.parseZone(
+    get_date_input() + 'T' + get_time_input() + get_utc_offset_input(),
+  );
+}
+
+function parseTimeString(str) {
+  const re =
+    /^\s*(?:(?<hours>\d+(?:\.\d+)?)\s*h(?:ours?)?\s*)?(?:(?<minutes>\d+(?:\.\d+)?)\s*m(?:in(?:utes?)?)?\s*)?(?:(?<seconds>\d+(?:\.\d+)?)\s*s(?:ec(?:onds?)?)?\s*)?\s*$/i;
+  const m = re.exec(str);
+  if (!m) return null; // invalid format
+
+  // default to 0 when not present; parse floats to support "1.5h"
+  const hours = parseFloat(m.groups.hours ?? 0);
+  const minutes = parseFloat(m.groups.minutes ?? 0);
+  const seconds = parseFloat(m.groups.seconds ?? 0);
+
+  const totalSeconds = Math.round(hours * 3600 + minutes * 60 + seconds);
+
+  return totalSeconds;
+}
+
+function get_RA_input() {
+  str = document.getElementById('objectpicker').value;
+  return parseTimeString(str);
+}
+
+function button_clicked() {
+  local_dt = get_iso8601_date();
+  dt = local_dt.clone().utc();
+  today = dt;
+  today_midnight = today.clone().startOf('day');
+  today_time = today.clone().diff(today_midnight);
+
+  GMST = get_GMST_sec(today_time, today_midnight);
+  console.log(GMST);
+  LST = GMST + local_dt.utcOffset() * 60;
+  ra_seconds = get_RA_input();
+
+  GMST_t0 = get_GMST_sec(0, today_midnight);
+
+  GMST_HOUR = Math.floor(GMST / 3600);
+  GMST_MINUTE = Math.floor((GMST / 60) % 60);
+  GMST_SECOND = Math.round((GMST % 60) * 10) / 10;
+
+  GMST_t0_HOUR = Math.floor(GMST_t0 / 3600);
+  GMST_t0_MINUTE = Math.floor((GMST_t0 / 60) % 60);
+  GMST_t0_SECOND = Math.round((GMST_t0 % 60) * 10) / 10;
+
+  LST_HOUR = Math.floor(LST / 3600);
+  LST_MINUTE = Math.floor((LST / 60) % 60);
+  LST_SECOND = Math.round((LST % 60) * 10) / 10;
+
+  HA_HOUR = Math.floor((LST - ra_seconds) / 3600);
+  HA_MINUTE = Math.floor(((LST - ra_seconds) / 60) % 60);
+  HA_SECOND = Math.round(((LST - ra_seconds) % 60) * 10) / 10;
+
+  UTC_HOUR = Math.floor(today_time / 1000 / 3600);
+  UTC_MINUTE = Math.floor((today_time / 1000 / 60) % 60);
+  UTC_SECOND = Math.round(((today_time / 1000) % 60) * 10) / 10;
+
+  document.getElementById('utc_val').textContent =
+    UTC_HOUR + 'h ' + UTC_MINUTE + 'm ' + UTC_SECOND + 's';
+  document.getElementById('gmst_val').textContent =
+    GMST_HOUR + 'h ' + GMST_MINUTE + 'm ' + GMST_SECOND + 's';
+  document.getElementById('gmst_t0_val').textContent =
+    GMST_t0_HOUR + 'h ' + GMST_t0_MINUTE + 'm ' + GMST_t0_SECOND + 's';
+  document.getElementById('lst_val').textContent =
+    LST_HOUR + 'h ' + LST_MINUTE + 'm ' + LST_SECOND + 's';
+  document.getElementById('ha_val').textContent =
+    HA_HOUR + 'h ' + HA_MINUTE + 'm ' + HA_SECOND + 's';
+}
+
+</script>
+
+
+
+</html>
