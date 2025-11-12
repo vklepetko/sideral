@@ -17,7 +17,7 @@ p {
 
 .container {
     width: 100%;           /* Set width to 100% */
-    max-width: 1400px;     /* Limit max width to 400px */
+    max-width: 1000px;     /* Limit max width to 400px */
     margin: 0 auto;       /* Center the container */
     background: white;
     padding: 20px;
