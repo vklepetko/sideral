@@ -242,51 +242,69 @@ function get_RA_input() {
   return parseTimeString(str);
 }
 
-function button_clicked() {
+
+function normalize_time(cntsec){
+  if (cntsec<0){
+    return 24*60*60 + cntsec;
+  }
+  else if (cntsec>24*60*60){
+    return cntsec -24*60*60 ;
+  }
+  else{
+    return cntsec;
+  }
+}
+
+function button_clicked(){
   local_dt = get_iso8601_date();
   dt = local_dt.clone().utc();
-  today = dt;
+  today= dt;
   today_midnight = today.clone().startOf('day');
   today_time = today.clone().diff(today_midnight);
 
-  GMST = get_GMST_sec(today_time, today_midnight);
+  GMST = get_GMST_sec(today_time,today_midnight);
   console.log(GMST);
-  LST = (GMST +local_dt.utcOffset()*60)%(24*60*60);
+  LST = (GMST +local_dt.utcOffset()*60);
   ra_seconds= get_RA_input();
-  HA = (GMST -ra_seconds +local_dt.utcOffset()*60)%(24*60*60);
+  HA = (GMST -ra_seconds +local_dt.utcOffset()*60);
 
-  GMST_t0 = get_GMST_sec(0, today_midnight);
+  LST = normalize_time(LST);
+  HA = normalize_time(HA);
 
-  GMST_HOUR = Math.floor(GMST / 3600);
-  GMST_MINUTE = Math.floor((GMST / 60) % 60);
-  GMST_SECOND = Math.round((GMST % 60) * 10) / 10;
 
-  GMST_t0_HOUR = Math.floor(GMST_t0 / 3600);
-  GMST_t0_MINUTE = Math.floor((GMST_t0 / 60) % 60);
-  GMST_t0_SECOND = Math.round((GMST_t0 % 60) * 10) / 10;
 
-  LST_HOUR = Math.floor(LST / 3600);
-  LST_MINUTE = Math.floor((LST / 60) % 60);
-  LST_SECOND = Math.round((LST % 60) * 10) / 10;
+  GMST_t0 = get_GMST_sec(0,today_midnight);
+
+  GMST_HOUR = Math.floor(GMST/3600);
+  GMST_MINUTE = Math.floor((GMST/60)%60);
+  GMST_SECOND = Math.round(((GMST)%60)*10)/10;
+
+  GMST_t0_HOUR = Math.floor(GMST_t0/3600);
+  GMST_t0_MINUTE = Math.floor((GMST_t0/60)%60);
+  GMST_t0_SECOND = Math.round(((GMST_t0)%60)*10)/10;
+
+  LST_HOUR = Math.floor(LST/3600);
+  LST_MINUTE = Math.floor((LST/60)%60);
+  LST_SECOND = Math.round((LST%60)*10)/10;
 
   HA_HOUR = Math.floor((HA)/3600);
   HA_MINUTE = Math.floor(((HA)/60)%60);
   HA_SECOND = Math.round(((HA)%60)*10)/10;
 
-  UTC_HOUR = Math.floor(today_time / 1000 / 3600);
-  UTC_MINUTE = Math.floor((today_time / 1000 / 60) % 60);
-  UTC_SECOND = Math.round(((today_time / 1000) % 60) * 10) / 10;
+  UTC_HOUR = Math.floor((today_time/1000)/3600);
+  UTC_MINUTE = Math.floor((today_time/1000/60)%60);
+  UTC_SECOND = Math.round(((today_time/1000)%60)*10)/10;
 
-  document.getElementById('utc_val').textContent =
-    UTC_HOUR + 'h ' + UTC_MINUTE + 'm ' + UTC_SECOND + 's';
-  document.getElementById('gmst_val').textContent =
-    GMST_HOUR + 'h ' + GMST_MINUTE + 'm ' + GMST_SECOND + 's';
-  document.getElementById('gmst_t0_val').textContent =
-    GMST_t0_HOUR + 'h ' + GMST_t0_MINUTE + 'm ' + GMST_t0_SECOND + 's';
-  document.getElementById('lst_val').textContent =
-    LST_HOUR + 'h ' + LST_MINUTE + 'm ' + LST_SECOND + 's';
-  document.getElementById('ha_val').textContent =
-    HA_HOUR + 'h ' + HA_MINUTE + 'm ' + HA_SECOND + 's';
+
+
+
+  document.getElementById('utc_val').textContent = UTC_HOUR+'h ' + UTC_MINUTE + 'm ' + UTC_SECOND +'s';
+  document.getElementById('gmst_val').textContent = GMST_HOUR+'h ' + GMST_MINUTE + 'm ' + GMST_SECOND +'s';
+  document.getElementById('gmst_t0_val').textContent = GMST_t0_HOUR+'h ' + GMST_t0_MINUTE + 'm ' + GMST_t0_SECOND +'s';
+  document.getElementById('lst_val').textContent = LST_HOUR+'h ' + LST_MINUTE + 'm ' + LST_SECOND +'s';
+  document.getElementById('ha_val').textContent = HA_HOUR+'h ' + HA_MINUTE + 'm ' + HA_SECOND +'s';
+
+
 }
 
 </script>
