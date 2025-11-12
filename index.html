@@ -251,8 +251,9 @@ function button_clicked() {
 
   GMST = get_GMST_sec(today_time, today_midnight);
   console.log(GMST);
-  LST = GMST + local_dt.utcOffset() * 60;
-  ra_seconds = get_RA_input();
+  LST = (GMST +local_dt.utcOffset()*60)%(24*60*60);
+  ra_seconds= get_RA_input();
+  HA = (GMST -ra_seconds +local_dt.utcOffset()*60)%(24*60*60);
 
   GMST_t0 = get_GMST_sec(0, today_midnight);
 
@@ -268,9 +269,9 @@ function button_clicked() {
   LST_MINUTE = Math.floor((LST / 60) % 60);
   LST_SECOND = Math.round((LST % 60) * 10) / 10;
 
-  HA_HOUR = Math.floor((LST - ra_seconds) / 3600);
-  HA_MINUTE = Math.floor(((LST - ra_seconds) / 60) % 60);
-  HA_SECOND = Math.round(((LST - ra_seconds) % 60) * 10) / 10;
+  HA_HOUR = Math.floor((HA)/3600);
+  HA_MINUTE = Math.floor(((HA)/60)%60);
+  HA_SECOND = Math.round(((HA)%60)*10)/10;
 
   UTC_HOUR = Math.floor(today_time / 1000 / 3600);
   UTC_MINUTE = Math.floor((today_time / 1000 / 60) % 60);
